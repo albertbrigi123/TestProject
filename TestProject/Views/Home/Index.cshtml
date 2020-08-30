@@ -1,0 +1,181 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <style type="text/css">
+        body {
+            font-family: Arial;
+            font-size: 10pt;
+        }
+
+        table {
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+
+            table th {
+                background-color: #B8DBFD;
+                color: #333;
+                font-weight: bold;
+            }
+
+            table th, table td {
+                padding: 5px;
+                border: 1px solid #ccc;
+            }
+    </style>
+</head>
+<body>
+    <form enctype="multipart/form-data">
+        <input type="file" name="postedFile" />
+        <input type="button" id="btnUpload" value="Upload" />
+    </form>
+    <hr />
+    <form enctype="multipart/form-data">
+        Change file name
+        <input type="text" id="fname" />
+        to
+        <input type="text" id="newfname" />
+        <input type="button" id="btnChange" value="Change" onclick="Change();" />
+    </form>
+    <hr />
+    <form>
+        <input type="text" value="Enter file name" id="searchedfile" />
+        <input type="button" value="Search" onclick="Search();" />
+    </form>
+    <table id="tblFiles" cellpadding="0" cellspacing="0">
+        <tr>
+            <th style="width:50px">File ID</th>
+            <th style="width:120px">File Name</th>
+            <th style="width:80px">Download</th>
+            <th style="width:80px">Delete</th>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function(){
+            GetFiles();
+        });
+
+        function Change() {
+            var fname = $('#fname').val();
+            var newfname = $('#newfname').val();
+             $.ajax({
+                url: "/api/FileAPI/ChangeFileName?fname="+fname+"&newfname="+newfname,
+                type: 'POST',
+                data: {fname: fname, newfname: newfname},
+                cache: false,
+                contentType: false,
+                processData: false,
+                 success:
+                     location.reload(),
+                 failure: function (r) {
+                     alert(r.d);
+                 },
+                 error: function (r) {
+                     alert(r.d);
+                 }
+            });
+        };
+
+        function Search() {
+            var fname = $('#searchedfile').val();
+            $.ajax({
+                url: "/api/FileAPI/SearchFiles?fname=" + fname,
+                type: 'POST',
+                data: {},
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (files) {
+                    $.each(files, function () {
+                        AppendRow(this.id, this.Name);
+                    });
+                },
+                failure: function (r) {
+                    alert(r.d);
+                },
+                error: function (r) {
+                    alert(r.d);
+                }
+
+            });
+        };
+
+        function GetFiles() {
+            $.ajax({
+                type: "POST",
+                url: "/api/FileAPI/GetFiles",
+                data: '{}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (files) {
+                    $.each(files, function () {
+                        AppendRow(this.id, this.Name);
+                    });
+                },
+                failure: function (r) {
+                    alert(r.d);
+                },
+                error: function (r) {
+                    alert(r.d);
+                }
+            });
+        };
+
+        function AppendRow(id, name) {
+            var row = $("#tblFiles tbody tr:last-child");
+
+            //Remove if the row is dummy row.
+            if (row.find("td:empty").length > 0) {
+                row.remove();
+            }
+
+            row = row.clone();
+            $("td", row).eq(0).html(id);
+            $("td", row).eq(1).html(name);
+            $("td", row).eq(2).html("");
+            var a = $("<a />");
+            a[0].href = '@Url.Content("~/api/FileAPI/GetFile?FileId=")' + id;
+            a.html("Download");
+            $("td", row).eq(2).append(a);
+            var a = $("<a />");
+            a[0].href = '@Url.Content("~/api/FileAPI/DeleteFile?FileId=")' + id;
+            a.html("Delete");
+            $("td", row).eq(3).html(a);
+            $("#tblFiles tbody").append(row);
+        };
+
+        $("body").on("click", "#btnUpload", function () {
+            $.ajax({
+                url: '@Url.Content("~/api/FileAPI/UploadFile")',
+                type: 'POST',
+                data: new FormData($('form')[0]),
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    AppendRow(response.id, response.Name);
+                },
+
+            });
+        });
+
+
+
+    </script>
+</body>
+</html>
