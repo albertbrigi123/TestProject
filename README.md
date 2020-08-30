@@ -2,7 +2,7 @@
 
 ## WEB API
 
-[x] Fájl feltöltés
-[x] Fájl letöltés
-[x] Fájl törlés
-[x] Fájl átnevezés
+- [x] Fájl feltöltés
+- [x] Fájl letöltés
+- [x] Fájl törlés
+- [x] Fájl átnevezés
